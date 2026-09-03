@@ -3,279 +3,198 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>宿舍費用查詢系統 / Tra cứu phí KTX</title>
+  <title>伊頓宿舍費用查詢系統 / Tra cứu phí KTX Eton</title>
   <style>
     * { box-sizing: border-box; font-family: Arial, "Microsoft JhengHei", sans-serif; }
     body { background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; }
-    .container { background-color: #ffffff; width: 100%; max-width: 700px; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    h2 { text-align: center; color: #333; margin-bottom: 20px; }
-    .tab-buttons { display: flex; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
-    .tab-btn { flex: 1; padding: 10px; background: none; border: none; font-size: 16px; font-weight: bold; color: #666; cursor: pointer; }
-    .tab-btn.active { color: #007bff; border-bottom: 3px solid #007bff; }
+    .container { background-color: #ffffff; width: 100%; max-width: 750px; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #333; margin-bottom: 20px; line-height: 1.4; }
     .search-box { margin-bottom: 25px; }
     label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
-    input[type="text"], input[type="password"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; margin-bottom: 12px; }
-    button.submit-btn { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
-    button.submit-btn:hover { background-color: #0056b3; }
+    input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; margin-bottom: 12px; }
+    button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    button:hover { background-color: #0056b3; }
     .result-card { display: none; border: 1px solid #e1e4e8; border-radius: 8px; padding: 20px; background-color: #fafafa; }
     .user-info { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #1d2129; border-bottom: 2px solid #007bff; padding-bottom: 8px; }
     .item-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
     .item-table th, .item-table td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
     .item-table th { background-color: #f0f2f5; color: #4b4f56; }
     .amount { text-align: right; }
-    .discount { color: #d9534f; font-weight: bold; }
     .total-row { font-size: 18px; font-weight: bold; text-align: right; color: #007bff; padding-top: 10px; border-top: 2px solid #ccc; }
     .error-msg { color: #d9534f; text-align: center; display: none; margin-top: 15px; font-weight: bold; }
-    .admin-section { display: none; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>宿舍費用查詢系統<br><span style="font-size: 16px; font-weight: normal; color: #666;">Tra cứu chi tiết phí ký túc xá</span></h2>
+  <h2>伊頓宿舍費用查詢系統<br><span style="font-size: 16px; font-weight: normal; color: #666;">Tra cứu chi tiết phí ký túc xá Eton</span></h2>
   
-  <div class="tab-buttons">
-    <button class="tab-btn active" onclick="switchTab('user')">個人查詢 / Tra cứu</button>
-    <button class="tab-btn" onclick="switchTab('admin')">管理員登入 / Quản lý</button>
+  <div class="search-box">
+    <label for="loginInput">居留證號碼 / Số thẻ cư trú:</label>
+    <input type="text" id="loginInput" placeholder="請輸入居留證號 (例如: D900254071)" onkeypress="handleKeyPress(event)">
+    <button onclick="loginOrSearch()">登入查詢 / Tra cứu</button>
   </div>
 
-  <!-- 個人查詢頁籤 -->
-  <div id="userTab">
-    <div class="search-box">
-      <label for="arcInput">居留證號 / 工號 / 姓名:</label>
-      <input type="text" id="arcInput" value="" placeholder="請輸入居留證號 (例如: C123456789) 或工號" onkeypress="handleKeyPress(event, 'user')">
-      <button class="submit-btn" onclick="searchData()">查詢 / Tra cứu</button>
-    </div>
+  <div id="errorMsg" class="error-msg">查無此居留證號碼，請確認後重新輸入。<br>Không tìm thấy số thẻ cư trú này.</div>
 
-    <div id="errorMsg" class="error-msg">查無資料，請確認輸入內容是否正確。<br>Không tìm thấy dữ liệu.</div>
-
-    <div id="resultCard" class="result-card">
-      <div id="userInfo" class="user-info"></div>
-      <table class="item-table">
-        <thead>
-          <tr>
-            <th>日期 (Ngày)</th>
-            <th>項目 (Hạng mục)</th>
-            <th class="amount">金額 (Số tiền)</th>
-          </tr>
-        </thead>
-        <tbody id="itemBody"></tbody>
-      </table>
-      <div id="totalAmount" class="total-row"></div>
-    </div>
+  <!-- 個人明細 -->
+  <div id="userResult" class="result-card">
+    <div id="userInfo" class="user-info"></div>
+    <table class="item-table">
+      <thead>
+        <tr>
+          <th>工號 (Mã)</th>
+          <th>姓名 (Họ tên)</th>
+          <th>結帳日 (Ngày)</th>
+          <th class="amount">本期金額 (Số tiền)</th>
+        </tr>
+      </thead>
+      <tbody id="userItemBody"></tbody>
+    </table>
+    <div id="totalAmount" class="total-row"></div>
   </div>
 
-  <!-- 管理員登入頁籤 -->
-  <div id="adminTab" class="admin-section">
-    <div class="search-box">
-      <label for="adminPwd">管理員密碼 / Mật khẩu quản lý:</label>
-      <input type="password" id="adminPwd" placeholder="請輸入管理員密碼" onkeypress="handleKeyPress(event, 'admin')">
-      <button class="submit-btn" onclick="adminLogin()">登入 / Đăng nhập</button>
-    </div>
-
-    <div id="adminError" class="error-msg">密碼錯誤！請重新輸入。</div>
-
-    <div id="adminResult" class="result-card">
-      <div class="user-info">所有人員總表 (所有數據均精確加總)</div>
-      <table class="item-table">
-        <thead>
-          <tr>
-            <th>工號 / 居留證號</th>
-            <th>姓名</th>
-            <th class="amount">本期應繳總金額</th>
-          </tr>
-        </thead>
-        <tbody id="adminBody"></tbody>
-      </table>
-    </div>
+  <!-- 管理員總表 -->
+  <div id="adminResult" class="result-card">
+    <div class="user-info">【管理員模式】伊頓人員費用總表</div>
+    <table class="item-table">
+      <thead>
+        <tr>
+          <th>工號</th>
+          <th>居留證號</th>
+          <th>姓名</th>
+          <th class="amount">應繳金額</th>
+        </tr>
+      </thead>
+      <tbody id="adminItemBody"></tbody>
+    </table>
   </div>
-
 </div>
 
 <script>
-// 管理員預設密碼
+// 1. 管理員萬用密碼
 const ADMIN_PASSWORD = "admin123";
 
-// 人員費用資料陣列（改為 Array 結構，系統會自動比對 arc、code、name 三個欄位）
+// 2. 伊頓全體人員資料庫（依據伊頓-人員總表與115.08扣款明細匯入）
 const personList = [
-  {
-    code: "6EB001",
-    arc: "C123456781", // 請依實際居留證號替換
-    name: "武文雄",
-    items: [
-      { date: "08/01", name: "宿舍房租", amount: 2000 },
-      { date: "08/05", name: "冷氣水電費", amount: 126 }
-    ]
-  },
-  {
-    code: "6EB009",
-    arc: "C123456789", // 請依實際居留證號替換
-    name: "阮決勝",
-    items: [
-      { date: "08/01", name: "宿舍房租", amount: 2000 },
-      { date: "08/05", name: "水電費", amount: 455 }
-    ]
-  },
-  {
-    code: "6EB023",
-    arc: "C123456723", // 請依實際居留證號替換
-    name: "阮德合",
-    items: [
-      { date: "08/01", name: "宿舍房租", amount: 2000 },
-      { date: "08/01", name: "宿舍優惠折抵", amount: -500 },
-      { date: "08/05", name: "水電費", amount: 320 }
-    ]
-  },
-  {
-    code: "6EB024",
-    arc: "C123456724", // 請依實際居留證號替換
-    name: "蘇氏蓮",
-    items: [
-      { date: "08/01", name: "宿舍房租", amount: 2000 },
-      { date: "08/01", name: "宿舍優惠折抵", amount: -500 },
-      { date: "08/05", name: "水電費", amount: 480 }
-    ]
-  },
-  {
-    code: "6EB064",
-    arc: "C123456764", // 請依實際居留證號替換
-    name: "阮氏翠賢",
-    items: [
-      { date: "08/01", name: "宿舍房租", amount: 2000 },
-      { date: "08/01", name: "宿舍機車停車費", amount: 50 },
-      { date: "08/05", name: "水電分攤", amount: 320 }
-    ]
-  },
-  {
-    code: "6EB065",
-    arc: "C123456765", // 請依實際居留證號替換
-    name: "賴文鐘",
-    items: [
-      { date: "08/01", name: "宿舍房租", amount: 2000 },
-      { date: "08/01", name: "宿舍機車停車費", amount: 50 },
-      { date: "08/01", name: "電動車充電費", amount: 300 },
-      { date: "08/05", name: "冷氣水電費", amount: 360 }
-    ]
-  }
+  { code: "6EB040", arc: "D800359097", name: "阮玉河", amount: 2135, date: "115/08/20" },
+  { code: "6EB028", arc: "D800353620", name: "阮維純", amount: 2135, date: "115/08/20" },
+  { code: "6EB029", arc: "D800353639", name: "陳文都", amount: 2135, date: "115/08/20" },
+  { code: "6EB034", arc: "D800353540", name: "翁文升", amount: 2135, date: "115/08/20" },
+  { code: "6EB030", arc: "D800353648", name: "阮庭榮", amount: 2135, date: "115/08/20" },
+  { code: "6EB031", arc: "D800353657", name: "胡士懷", amount: 2135, date: "115/08/20" },
+  { code: "6EB047", arc: "D800360518", name: "范維興", amount: 2401, date: "115/08/20" },
+  { code: "6EB032", arc: "D800353666", name: "阮國輝", amount: 2135, date: "115/08/20" },
+  { code: "6EB033", arc: "D800353675", name: "黃海登", amount: 2135, date: "115/08/20" },
+  { code: "6EB039", arc: "D800359088", name: "范文情", amount: 2135, date: "115/08/20" },
+  { code: "6EB041", arc: "D800359104", name: "黃孟福", amount: 2135, date: "115/08/20" },
+  { code: "6EB065", arc: "D800375493", name: "賴文鐘", amount: 2710, date: "115/08/20" },
+  { code: "6EB052", arc: "D900247138", name: "阮氏懷", amount: 2401, date: "115/08/20" },
+  { code: "6EB053", arc: "D900245965", name: "陳氏鶯", amount: 2401, date: "115/08/20" },
+  { code: "6EB055", arc: "D900245983", name: "吳氏水", amount: 2401, date: "115/08/20" },
+  { code: "6EB056", arc: "D900245992", name: "阮芳芝", amount: 2401, date: "115/08/20" },
+  { code: "6EB057", arc: "D900246006", name: "黎氏金絨", amount: 2401, date: "115/08/20" },
+  { code: "6EB058", arc: "D900246015", name: "韋氏愛", amount: 2401, date: "115/08/20" },
+  { code: "6EB060", arc: "D900246033", name: "武氏幸", amount: 2401, date: "115/08/20" },
+  { code: "6EB017", arc: "D900231603", name: "黎秋玄", amount: 2135, date: "115/08/20" },
+  { code: "6EB020", arc: "D900231621", name: "胡氏月", amount: 2135, date: "115/08/20" },
+  { code: "6EB064", arc: "D900254071", name: "阮氏翠賢", amount: 2370, date: "115/08/20" },
+  { code: "6EB061", arc: "D900251936", name: "蘇氏蓮", amount: 1980, date: "115/08/20" },
+  { code: "6EB003", arc: "D900224813", name: "阮曰貞", amount: 2135, date: "115/08/20" },
+  { code: "6EB004", arc: "D900224822", name: "梁氏垂容", amount: 2135, date: "115/08/20" },
+  { code: "6EB005", arc: "D900224831", name: "鄧氏心", amount: 2135, date: "115/08/20" },
+  { code: "6EB006", arc: "D900224840", name: "吳氏慶璃", amount: 2135, date: "115/08/20" },
+  { code: "6EB025", arc: "D900237767", name: "阮氏銀", amount: 2135, date: "115/08/20" },
+  { code: "6EB026", arc: "D900237776", name: "團越瓊", amount: 2135, date: "115/08/20" },
+  { code: "6EB054", arc: "D900245974", name: "阮氏燕兒", amount: 2401, date: "115/08/20" },
+  { code: "6EB042", arc: "D900241529", name: "裴蘭英", amount: 2135, date: "115/08/20" },
+  { code: "6EB044", arc: "D900241547", name: "武青雲", amount: 2135, date: "115/08/20" },
+  { code: "6EB019", arc: "D900231596", name: "杜芳草", amount: 2135, date: "115/08/20" },
+  { code: "6EB050", arc: "D900242713", name: "裴氏翠", amount: 2401, date: "115/08/20" },
+  { code: "6EB021", arc: "D800347499", name: "阮維黃", amount: 2135, date: "115/08/20" },
+  { code: "6EB008", arc: "D800336996", name: "阮文戰", amount: 2401, date: "115/08/20" },
+  { code: "6EB016", arc: "D800343517", name: "丁天王", amount: 2135, date: "115/08/20" },
+  { code: "6EB009", arc: "D800337000", name: "阮決勝", amount: 3702, date: "115/01/20" },
+  { code: "6EB010", arc: "D800337019", name: "黎光亮", amount: 2401, date: "115/08/20" },
+  { code: "6EB066", arc: "D800382407", name: "黃玉榮", amount: 4782, date: "115/08/21" },
+  { code: "6EB027", arc: "D800352356", name: "歐文貴", amount: 2135, date: "115/08/20" },
+  { code: "6EB046", arc: "D800360509", name: "阮昌才", amount: 2401, date: "115/08/20" },
+  { code: "6EB051", arc: "D800360545", name: "阮太山", amount: 2401, date: "115/08/20" },
+  { code: "6EB048", arc: "D800360527", name: "陳文欽", amount: 2401, date: "115/08/20" },
+  { code: "6EB049", arc: "D800360536", name: "阮英俊", amount: 2401, date: "115/08/20" },
+  { code: "6EB022", arc: "D800349288", name: "黎國達", amount: 2135, date: "115/08/20" },
+  { code: "6EB002", arc: "D800333342", name: "阮文里", amount: 2413, date: "115/08/20" },
+  { code: "6EB036", arc: "D800356363", name: "阮懷寶", amount: 2135, date: "115/08/20" },
+  { code: "6EB037", arc: "D800356372", name: "黎世造", amount: 2135, date: "115/08/20" },
+  { code: "6EB024", arc: "D800352927", name: "陳長江", amount: 2135, date: "115/08/20" },
+  { code: "6EB062", arc: "D800371048", name: "阮文編", amount: 1980, date: "115/08/20" },
+  { code: "6EB063", arc: "D800371057", name: "阮德合", amount: 1820, date: "115/08/20" },
+  { code: "6EB067", arc: "D800384821", name: "潘青河", amount: 7666, date: "115/08/20" }
 ];
 
-// 切換頁籤
-function switchTab(type) {
-  const userTab = document.getElementById("userTab");
-  const adminTab = document.getElementById("adminTab");
-  const btns = document.querySelectorAll(".tab-btn");
-
-  if (type === 'user') {
-    userTab.style.display = "block";
-    adminTab.style.display = "none";
-    btns[0].classList.add("active");
-    btns[1].classList.remove("active");
-  } else {
-    userTab.style.display = "none";
-    adminTab.style.display = "block";
-    btns[1].classList.add("active");
-    btns[0].classList.remove("active");
-  }
-}
-
-// 查詢邏輯（修正為支援居留證、工號與姓名模糊比對）
-function searchData() {
-  const inputVal = document.getElementById("arcInput").value.trim().toUpperCase();
+function loginOrSearch() {
+  const inputVal = document.getElementById("loginInput").value.trim().toUpperCase();
   const errorMsg = document.getElementById("errorMsg");
-  const resultCard = document.getElementById("resultCard");
+  const userResult = document.getElementById("userResult");
+  const adminResult = document.getElementById("adminResult");
+  
   const userInfo = document.getElementById("userInfo");
-  const itemBody = document.getElementById("itemBody");
+  const userItemBody = document.getElementById("userItemBody");
   const totalAmount = document.getElementById("totalAmount");
+  const adminItemBody = document.getElementById("adminItemBody");
 
   errorMsg.style.display = "none";
-  resultCard.style.display = "none";
-  itemBody.innerHTML = "";
+  userResult.style.display = "none";
+  adminResult.style.display = "none";
+  userItemBody.innerHTML = "";
+  adminItemBody.innerHTML = "";
 
   if (!inputVal) {
-    alert("請輸入居留證號碼或工號！ / Vui lòng nhập số thẻ cư trú!");
+    alert("請輸入居留證號碼！ / Vui lòng nhập số thẻ cư trú!");
     return;
   }
 
-  // 自動比對 arc (居留證)、code (工號) 或 name (姓名)
-  const matchedPerson = personList.find(p => 
-    (p.arc && p.arc.toUpperCase() === inputVal) ||
-    (p.code && p.code.toUpperCase() === inputVal) ||
-    (p.name && p.name.toUpperCase() === inputVal)
-  );
+  // A. 管理員萬用密碼登入
+  if (inputVal === ADMIN_PASSWORD.toUpperCase()) {
+    personList.forEach(person => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${person.code}</td>
+        <td>${person.arc}</td>
+        <td>${person.name}</td>
+        <td class="amount" style="font-weight:bold; color:#007bff;">NT$ ${person.amount.toLocaleString()}</td>
+      `;
+      adminItemBody.appendChild(tr);
+    });
+    adminResult.style.display = "block";
+    return;
+  }
+
+  // B. 個人居留證號查詢 (自動轉為大寫比對)
+  const matchedPerson = personList.find(p => p.arc.toUpperCase() === inputVal || p.code.toUpperCase() === inputVal);
 
   if (matchedPerson) {
-    userInfo.textContent = `姓名 (Họ tên): ${matchedPerson.name} (${matchedPerson.code})`;
+    userInfo.textContent = `居留證號: ${matchedPerson.arc} (${matchedPerson.name})`;
     
-    let calculatedTotal = 0;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${matchedPerson.code}</td>
+      <td>${matchedPerson.name}</td>
+      <td>${matchedPerson.date}</td>
+      <td class="amount">NT$ ${matchedPerson.amount.toLocaleString()}</td>
+    `;
+    userItemBody.appendChild(tr);
 
-    matchedPerson.items.forEach(item => {
-      calculatedTotal += item.amount;
-      
-      const tr = document.createElement("tr");
-      const tdDate = document.createElement("td");
-      tdDate.textContent = item.date || "-";
-      
-      const tdName = document.createElement("td");
-      tdName.textContent = item.name;
-      
-      const tdAmount = document.createElement("td");
-      tdAmount.className = "amount";
-      
-      if (item.amount < 0) {
-        tdAmount.classList.add("discount");
-        tdAmount.textContent = `- NT$ ${Math.abs(item.amount).toLocaleString()}`;
-      } else {
-        tdAmount.textContent = `NT$ ${item.amount.toLocaleString()}`;
-      }
-
-      tr.appendChild(tdDate);
-      tr.appendChild(tdName);
-      tr.appendChild(tdAmount);
-      itemBody.appendChild(tr);
-    });
-
-    totalAmount.textContent = `總計 (Tổng cộng): NT$ ${calculatedTotal.toLocaleString()}`;
-    resultCard.style.display = "block";
+    totalAmount.textContent = `本期應繳總計 (Tổng cộng): NT$ ${matchedPerson.amount.toLocaleString()}`;
+    userResult.style.display = "block";
   } else {
     errorMsg.style.display = "block";
   }
 }
 
-// 管理員登入邏輯
-function adminLogin() {
-  const pwd = document.getElementById("adminPwd").value.trim();
-  const adminError = document.getElementById("adminError");
-  const adminResult = document.getElementById("adminResult");
-  const adminBody = document.getElementById("adminBody");
-
-  adminError.style.display = "none";
-  adminResult.style.display = "none";
-  adminBody.innerHTML = "";
-
-  if (pwd === ADMIN_PASSWORD) {
-    personList.forEach(person => {
-      let sum = 0;
-      person.items.forEach(i => sum += i.amount);
-
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${person.code} (${person.arc})</td>
-        <td>${person.name}</td>
-        <td class="amount" style="font-weight:bold; color:#007bff;">NT$ ${sum.toLocaleString()}</td>
-      `;
-      adminBody.appendChild(tr);
-    });
-    
-    adminResult.style.display = "block";
-  } else {
-    adminError.style.display = "block";
-  }
-}
-
-function handleKeyPress(event, type) {
+function handleKeyPress(event) {
   if (event.key === "Enter") {
-    if (type === 'user') searchData();
-    if (type === 'admin') adminLogin();
+    loginOrSearch();
   }
 }
 </script>
