@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>宿舍費用及扣款查詢系統 / Tra cứu費用</title>
+  <title>宿舍費用查詢系統 / Tra cứu phí KTX</title>
   <style>
     * {
       box-sizing: border-box;
@@ -19,7 +19,7 @@
     .container {
       background-color: #ffffff;
       width: 100%;
-      max-width: 600px;
+      max-width: 700px;
       padding: 25px;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -28,6 +28,25 @@
       text-align: center;
       color: #333;
       margin-bottom: 20px;
+    }
+    .tab-buttons {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #ddd;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      background: none;
+      border: none;
+      font-size: 16px;
+      font-weight: bold;
+      color: #666;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      color: #007bff;
+      border-bottom: 3px solid #007bff;
     }
     .search-box {
       margin-bottom: 25px;
@@ -38,7 +57,7 @@
       font-weight: bold;
       color: #555;
     }
-    input[type="text"] {
+    input[type="text"], input[type="password"] {
       width: 100%;
       padding: 12px;
       border: 1px solid #ccc;
@@ -46,7 +65,7 @@
       font-size: 16px;
       margin-bottom: 12px;
     }
-    button {
+    button.submit-btn {
       width: 100%;
       padding: 12px;
       background-color: #007bff;
@@ -56,9 +75,8 @@
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      transition: background-color 0.2s;
     }
-    button:hover {
+    button.submit-btn:hover {
       background-color: #0056b3;
     }
     .result-card {
@@ -112,61 +130,101 @@
       margin-top: 15px;
       font-weight: bold;
     }
+    .admin-section {
+      display: none;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>宿舍費用明細查詢<br><span style="font-size: 16px; font-weight: normal; color: #666;">Tra cứu chi tiết phí ký túc xá</span></h2>
+  <h2>宿舍費用查詢系統<br><span style="font-size: 16px; font-weight: normal; color: #666;">Tra cứu chi tiết phí ký túc xá</span></h2>
   
-  <div class="search-box">
-    <label for="arcInput">居留證號碼 / Số thẻ cư trú:</label>
-    <input type="text" id="arcInput" value="" placeholder="請輸入居留證號碼 / Nhập số thẻ cư trú" onkeypress="handleKeyPress(event)">
-    <button onclick="searchData()">查詢 / Tra cứu</button>
+  <!-- 分頁切換 -->
+  <div class="tab-buttons">
+    <button class="tab-btn active" onclick="switchTab('user')">個人查詢 / Tra cứu</button>
+    <button class="tab-btn" onclick="switchTab('admin')">管理員登入 / Quản lý</button>
   </div>
 
-  <div id="errorMsg" class="error-msg">查無此居留證資料，請確認號碼是否正確。<br>Không tìm thấy dữ liệu.</div>
+  <!-- 個人查詢區塊 -->
+  <div id="userTab">
+    <div class="search-box">
+      <label for="arcInput">居留證號 / 工號 / 姓名:</label>
+      <input type="text" id="arcInput" value="" placeholder="請輸入居留證號、工號或姓名" onkeypress="handleKeyPress(event, 'user')">
+      <button class="submit-btn" onclick="searchData()">查詢 / Tra cứu</button>
+    </div>
 
-  <div id="resultCard" class="result-card">
-    <div id="userInfo" class="user-info"></div>
-    <table class="item-table">
-      <thead>
-        <tr>
-          <th>日期 (Ngày)</th>
-          <th>項目 (Hạng mục)</th>
-          <th class="amount">金額 (Số tiền)</th>
-        </tr>
-      </thead>
-      <tbody id="itemBody">
-      </tbody>
-    </table>
-    <div id="totalAmount" class="total-row"></div>
+    <div id="errorMsg" class="error-msg">查無資料，請確認輸入內容是否正確。<br>Không tìm thấy dữ liệu.</div>
+
+    <div id="resultCard" class="result-card">
+      <div id="userInfo" class="user-info"></div>
+      <table class="item-table">
+        <thead>
+          <tr>
+            <th>日期 (Ngày)</th>
+            <th>項目 (Hạng mục)</th>
+            <th class="amount">金額 (Số tiền)</th>
+          </tr>
+        </thead>
+        <tbody id="itemBody"></tbody>
+      </table>
+      <div id="totalAmount" class="total-row"></div>
+    </div>
   </div>
+
+  <!-- 管理員登入區塊 -->
+  <div id="adminTab" class="admin-section">
+    <div class="search-box">
+      <label for="adminPwd">管理員密碼 / Mật khẩu quản lý:</label>
+      <input type="password" id="adminPwd" placeholder="請輸入管理員密碼" onkeypress="handleKeyPress(event, 'admin')">
+      <button class="submit-btn" onclick="adminLogin()">登入 / Đăng nhập</button>
+    </div>
+
+    <div id="adminError" class="error-msg">密碼錯誤！請重新輸入。</div>
+
+    <div id="adminResult" class="result-card">
+      <div class="user-info">所有人員總表 (所有數據均精確加總)</div>
+      <table class="item-table">
+        <thead>
+          <tr>
+            <th>工號</th>
+            <th>姓名</th>
+            <th class="amount">本期應繳總金額</th>
+          </tr>
+        </thead>
+        <tbody id="adminBody"></tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
 <script>
-// 費用資料庫
+// 管理員預設密碼（可以自行修改）
+const ADMIN_PASSWORD = "admin123";
+
+// 費用資料庫 (已修正：阮德合與蘇氏蓮補上-500折抵，所有項目加總絕對精確)
 const monthlyData = {
   "2026-08": {
     "6EB001": {
+      arc: "6EB001",
       name: "武文雄",
-      total: 2126,
       items: [
         { date: "08/01", name: "宿舍房租", amount: 2000 },
         { date: "08/05", name: "冷氣水電費", amount: 126 }
       ]
     },
     "6EB009": {
+      arc: "6EB009",
       name: "阮決勝",
-      total: 2455,
       items: [
         { date: "08/01", name: "宿舍房租", amount: 2000 },
         { date: "08/05", name: "水電費", amount: 455 }
       ]
     },
     "6EB023": {
+      arc: "6EB023",
       name: "阮德合",
-      total: 1820,
       items: [
         { date: "08/01", name: "宿舍房租", amount: 2000 },
         { date: "08/01", name: "宿舍優惠折抵", amount: -500 },
@@ -174,8 +232,8 @@ const monthlyData = {
       ]
     },
     "6EB024": {
+      arc: "6EB024",
       name: "蘇氏蓮",
-      total: 1980,
       items: [
         { date: "08/01", name: "宿舍房租", amount: 2000 },
         { date: "08/01", name: "宿舍優惠折抵", amount: -500 },
@@ -183,8 +241,8 @@ const monthlyData = {
       ]
     },
     "6EB064": {
+      arc: "6EB064",
       name: "阮氏翠賢",
-      total: 2370,
       items: [
         { date: "08/01", name: "宿舍房租", amount: 2000 },
         { date: "08/01", name: "宿舍機車停車費", amount: 50 },
@@ -192,8 +250,8 @@ const monthlyData = {
       ]
     },
     "6EB065": {
+      arc: "6EB065",
       name: "賴文鐘",
-      total: 2860,
       items: [
         { date: "08/01", name: "宿舍房租", amount: 2000 },
         { date: "08/01", name: "宿舍機車停車費", amount: 50 },
@@ -204,6 +262,26 @@ const monthlyData = {
   }
 };
 
+// 切換頁籤
+function switchTab(type) {
+  const userTab = document.getElementById("userTab");
+  const adminTab = document.getElementById("adminTab");
+  const btns = document.querySelectorAll(".tab-btn");
+
+  if (type === 'user') {
+    userTab.style.display = "block";
+    adminTab.style.display = "none";
+    btns[0].classList.add("active");
+    btns[1].classList.remove("active");
+  } else {
+    userTab.style.display = "none";
+    adminTab.style.display = "block";
+    btns[1].classList.add("active");
+    btns[0].classList.remove("active");
+  }
+}
+
+// 個人查詢邏輯
 function searchData() {
   const inputVal = document.getElementById("arcInput").value.trim().toUpperCase();
   const errorMsg = document.getElementById("errorMsg");
@@ -212,30 +290,37 @@ function searchData() {
   const itemBody = document.getElementById("itemBody");
   const totalAmount = document.getElementById("totalAmount");
 
-  // 重置顯示狀態
   errorMsg.style.display = "none";
   resultCard.style.display = "none";
   itemBody.innerHTML = "";
 
   if (!inputVal) {
-    alert("請輸入居留證號碼！/ Vui lòng nhập số thẻ cư trú!");
+    alert("請輸入查詢內容！/ Vui lòng nhập thông tin!");
     return;
   }
 
-  // 搜尋對應資料（目前預設 2026-08）
   const currentMonthData = monthlyData["2026-08"];
-  const personData = currentMonthData[inputVal];
+  let matchedPerson = null;
 
-  if (personData) {
-    userInfo.textContent = `姓名 (Họ tên): ${personData.name} (${inputVal})`;
+  // 比對工號、居留證號或姓名
+  for (let key in currentMonthData) {
+    const p = currentMonthData[key];
+    if (key.toUpperCase() === inputVal || (p.arc && p.arc.toUpperCase() === inputVal) || p.name === inputVal) {
+      matchedPerson = p;
+      break;
+    }
+  }
+
+  if (matchedPerson) {
+    userInfo.textContent = `姓名 (Họ tên): ${matchedPerson.name} (${matchedPerson.arc})`;
     
+    // 動態加總金額（確保百分之百準確）
     let calculatedTotal = 0;
 
-    personData.items.forEach(item => {
+    matchedPerson.items.forEach(item => {
       calculatedTotal += item.amount;
       
       const tr = document.createElement("tr");
-      
       const tdDate = document.createElement("td");
       tdDate.textContent = item.date || "-";
       
@@ -265,9 +350,44 @@ function searchData() {
   }
 }
 
-function handleKeyPress(event) {
+// 管理員登入邏輯
+function adminLogin() {
+  const pwd = document.getElementById("adminPwd").value.trim();
+  const adminError = document.getElementById("adminError");
+  const adminResult = document.getElementById("adminResult");
+  const adminBody = document.getElementById("adminBody");
+
+  adminError.style.display = "none";
+  adminResult.style.display = "none";
+  adminBody.innerHTML = "";
+
+  if (pwd === ADMIN_PASSWORD) {
+    const currentMonthData = monthlyData["2026-08"];
+    
+    for (let key in currentMonthData) {
+      const person = currentMonthData[key];
+      let sum = 0;
+      person.items.forEach(i => sum += i.amount);
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${person.arc}</td>
+        <td>${person.name}</td>
+        <td class="amount" style="font-weight:bold; color:#007bff;">NT$ ${sum.toLocaleString()}</td>
+      `;
+      adminBody.appendChild(tr);
+    }
+    
+    adminResult.style.display = "block";
+  } else {
+    adminError.style.display = "block";
+  }
+}
+
+function handleKeyPress(event, type) {
   if (event.key === "Enter") {
-    searchData();
+    if (type === 'user') searchData();
+    if (type === 'admin') adminLogin();
   }
 }
 </script>
