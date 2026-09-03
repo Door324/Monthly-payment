@@ -3,52 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>人員薪資明細查詢系統</title>
+    <title>人員管理系統</title>
     <style>
         * {
             box-sizing: border-box;
             font-family: "Microsoft JhengHei", Arial, sans-serif;
         }
         body {
-            background-color: #f4f6f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            background-color: #f4f7f6;
             margin: 0;
             padding: 20px;
+            display: flex;
+            justify-content: center;
         }
         .container {
+            width: 100%;
+            max-width: 600px;
             background: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 550px;
         }
         h2 {
             text-align: center;
-            color: #2c3e50;
+            color: #333;
             margin-bottom: 20px;
         }
-        .form-group {
-            margin-bottom: 15px;
+        .login-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #555;
-            font-weight: bold;
-        }
-        input[type="password"] {
-            width: 100%;
+        input {
             padding: 12px;
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 16px;
         }
         button {
-            width: 100%;
             padding: 12px;
             background-color: #007bff;
             color: white;
@@ -56,276 +48,214 @@
             border-radius: 6px;
             font-size: 16px;
             cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
+            transition: background 0.2s;
         }
         button:hover {
             background-color: #0056b3;
         }
-        .logout-btn {
-            background-color: #dc3545;
-            margin-top: 20px;
-        }
-        .logout-btn:hover {
-            background-color: #bd2130;
-        }
         .user-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            padding: 14px 18px;
-            border-radius: 8px;
-            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
         }
-        .admin-clickable {
+        .user-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        /* 管理員點擊專屬樣式 */
+        .clickable {
+            color: #007bff;
             cursor: pointer;
-            transition: all 0.2s;
+            text-decoration: underline;
         }
-        .admin-clickable:hover {
-            background-color: #f1f5f9;
-            border-color: #cbd5e1;
+        .clickable:hover {
+            color: #0056b3;
         }
         .badge {
-            background-color: #0d6efd;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 13px;
+            background-color: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #495057;
         }
         
-        /* 細項表格樣式 */
-        .detail-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        .detail-table th, .detail-table td {
-            padding: 10px;
-            border: 1px solid #e2e8f0;
-            text-align: left;
-        }
-        .detail-table th {
-            background-color: #f8fafc;
-            color: #475569;
-            width: 40%;
-        }
-        .detail-table td {
-            color: #1e293b;
-            font-weight: 500;
-        }
-        .amount-highlight {
-            color: #059669;
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-        .deduct-highlight {
-            color: #dc2626;
-        }
-
-        /* Modal 彈出視窗樣式 */
-        .modal {
+        /* 彈出視窗 (Modal) 樣式 */
+        .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
             justify-content: center;
             align-items: center;
             z-index: 1000;
         }
         .modal-content {
-            background-color: white;
+            background: white;
             padding: 25px;
-            border-radius: 12px;
+            border-radius: 10px;
             width: 90%;
-            max-width: 480px;
-            max-height: 85vh;
-            overflow-y: auto;
+            max-width: 450px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 8px;
+        }
+        .detail-row {
+            margin: 10px 0;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #555;
         }
         .close-btn {
-            background-color: #64748b;
-            margin-top: 15px;
+            margin-top: 20px;
+            width: 100%;
+            background-color: #6c757d;
         }
         .close-btn:hover {
-            background-color: #475569;
+            background-color: #5a6268;
+        }
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- 1. 登入畫面 -->
-    <div id="login-section">
-        <h2>薪資資料查詢系統</h2>
-        <div class="form-group">
-            <label for="password">請輸入個人/管理員密碼：</label>
-            <input type="password" id="password" placeholder="請輸入密碼">
-        </div>
-        <button onclick="login()">登入系統</button>
+    <h2>人員系統登入</h2>
+    
+    <!-- 登入區塊 -->
+    <div id="login-section" class="login-box">
+        <input type="password" id="password-input" placeholder="請輸入密碼...">
+        <button onclick="login()">登入</button>
     </div>
 
-    <!-- 2. 主畫面 (登入後顯示) -->
-    <div id="main-section" style="display: none;">
-        <h2 id="view-title">薪資明細</h2>
-        <div id="content-list"></div>
-        <button class="logout-btn" onclick="logout()">安全登出</button>
+    <!-- 主內容區塊 (登入後顯示) -->
+    <div id="main-section" class="hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <span id="role-badge" class="badge"></span>
+            <button onclick="logout()" style="padding: 6px 12px; font-size: 14px; background-color: #dc3545;">登出</button>
+        </div>
+        <div id="user-list"></div>
     </div>
 </div>
 
-<!-- 3. 管理員點擊彈出視窗 (Modal) -->
-<div id="detail-modal" class="modal">
+<!-- 詳細資料彈出視窗 -->
+<div id="modal" class="modal-overlay">
     <div class="modal-content">
-        <h3 style="margin-top:0; text-align:center; color:#1e293b;">薪資費用細項明細</h3>
+        <div class="modal-header">人員詳細資料</div>
         <div id="modal-body"></div>
-        <button class="close-btn" onclick="closeModal()">關閉視窗</button>
+        <button class="close-btn" onclick="closeModal()">關閉</button>
     </div>
 </div>
 
 <script>
-    // 管理員密碼 (8個零)
-    const ADMIN_PASSWORD = "00000000";
+    // 1. 設定密碼
+    const ADMIN_PASSWORD = "00000000"; // 管理員萬用密碼 (8個零)
+    const USER_PASSWORD = "123";        // 一般使用者預設密碼
 
-    // 包含完整的金額與金額扣減金額資料結構
-    const userData = [
-        {
-            id: "A01",
-            name: "張小明",
-            password: "123",
-            department: "製造一課",
-            month: "2026年03月",
-            baseSalary: 28500,     // 基本薪資
-            overtimePay: 4500,     // 加班費
-            allowance: 2000,       // 津貼/獎金
-            foodDeduction: 2500,   // 膳宿費
-            laborIns: 650,         // 勞保費
-            healthIns: 430,        // 健保費
-            otherDeduction: 0,     // 其他扣款
-            netPay: 31920          // 實領金額
-        },
-        {
-            id: "A02",
-            name: "李大華",
-            password: "456",
-            department: "技術部",
-            month: "2026年03月",
-            baseSalary: 32000,
-            overtimePay: 6200,
-            allowance: 3000,
-            foodDeduction: 2500,
-            laborIns: 720,
-            healthIns: 480,
-            otherDeduction: 1000,
-            netPay: 36500
-        },
-        {
-            id: "A03",
-            name: "阮氏美 (NGUYEN)",
-            password: "789",
-            department: "包裝組",
-            month: "2026年03月",
-            baseSalary: 28500,
-            overtimePay: 5100,
-            allowance: 1500,
-            foodDeduction: 2500,
-            laborIns: 650,
-            healthIns: 430,
-            otherDeduction: 0,
-            netPay: 31520
-        }
+    // 2. 模擬人員數據資料庫
+    const usersData = [
+        { id: "A001", name: "張小明", department: "製造一部", room: "A棟 201", phone: "0912-345-678", status: "在職", notes: "早班，負責一號機台" },
+        { id: "A002", name: "王大同", department: "品質管理", room: "B棟 105", phone: "0923-456-789", status: "在職", notes: "夜班，需協助宿舍管理" },
+        { id: "A003", name: "陳美麗", department: "行政管理", room: "A棟 302", phone: "0934-567-890", status: "請假中", notes: "預計下週一返回" },
+        { id: "A004", name: "李科長", department: "資材部", room: "C棟 101", phone: "0945-678-901", status: "在職", notes: "無特殊備註" }
     ];
 
+    let isAdmin = false;
+
+    // 3. 登入邏輯
     function login() {
-        const inputPassword = document.getElementById("password").value.trim();
-        const contentList = document.getElementById("content-list");
-        const viewTitle = document.getElementById("view-title");
+        const inputPass = document.getElementById("password-input").value;
 
-        if (!inputPassword) {
-            alert("請輸入密碼！");
-            return;
-        }
-
-        document.getElementById("password").value = "";
-
-        // 1. 管理員身份登入 (可看所有人，點擊展開金額細項)
-        if (inputPassword === ADMIN_PASSWORD) {
-            viewTitle.innerText = "管理員總覽 (點擊查看個人錢項明細)";
-            contentList.innerHTML = "";
-
-            userData.forEach(user => {
-                const card = document.createElement("div");
-                card.className = "user-card admin-clickable";
-                card.innerHTML = `
-                    <div>
-                        <strong>${user.name}</strong> <span style="font-size:0.9em; color:#64748b;">(${user.department})</span>
-                        <br><span style="font-size:0.85em; color:#059669;">實發：$${user.netPay.toLocaleString()}</span>
-                    </div>
-                    <span class="badge">查看金額明細</span>
-                `;
-                card.onclick = () => openUserDetail(user);
-                contentList.appendChild(card);
-            });
-
-            switchView(true);
-            return;
-        }
-
-        // 2. 一般使用者登入 (直接顯示個人的詳細費用金額)
-        const foundUser = userData.find(u => u.password === inputPassword);
-        if (foundUser) {
-            viewTitle.innerText = `${foundUser.name} - 個人薪資明細 (${foundUser.month})`;
-            contentList.innerHTML = generateDetailHTML(foundUser);
-            switchView(true);
+        if (inputPass === ADMIN_PASSWORD) {
+            isAdmin = true;
+            document.getElementById("role-badge").innerText = "目前身分：系統管理員";
+            document.getElementById("role-badge").style.color = "#007bff";
+            enterSystem();
+        } else if (inputPass === USER_PASSWORD) {
+            isAdmin = false;
+            document.getElementById("role-badge").innerText = "目前身分：一般使用者";
+            document.getElementById("role-badge").style.color = "#28a745";
+            enterSystem();
         } else {
             alert("密碼錯誤，請重新輸入！");
         }
     }
 
-    // 打開細項 Modal
-    function openUserDetail(user) {
+    // 進入系統介面
+    function enterSystem() {
+        document.getElementById("login-section").classList.add("hidden");
+        document.getElementById("main-section").classList.remove("hidden");
+        renderList();
+    }
+
+    // 4. 渲染人員清單
+    function renderList() {
+        const listContainer = document.getElementById("user-list");
+        listContainer.innerHTML = "";
+
+        usersData.forEach((user, index) => {
+            const card = document.createElement("div");
+            card.className = "user-card";
+
+            if (isAdmin) {
+                // 管理員身分：名字變成藍色底線可點擊
+                card.innerHTML = `
+                    <span class="user-name clickable" onclick="openDetail(${index})">
+                        ${user.name} 🔍
+                    </span>
+                    <span class="badge">${user.department}</span>
+                `;
+            } else {
+                // 一般使用者身分：純文字無法點擊
+                card.innerHTML = `
+                    <span class="user-name">${user.name}</span>
+                    <span class="badge">${user.department}</span>
+                `;
+            }
+            listContainer.appendChild(card);
+        });
+    }
+
+    // 5. 管理員點擊開啟詳細資料 Modal
+    function openDetail(index) {
+        const user = usersData[index];
         const modalBody = document.getElementById("modal-body");
-        modalBody.innerHTML = generateDetailHTML(user);
-        document.getElementById("detail-modal").style.display = "flex";
+
+        modalBody.innerHTML = `
+            <div class="detail-row"><span class="detail-label">姓名：</span>${user.name}</div>
+            <div class="detail-row"><span class="detail-label">工號：</span>${user.id}</div>
+            <div class="detail-row"><span class="detail-label">部門：</span>${user.department}</div>
+            <div class="detail-row"><span class="detail-label">宿舍房號：</span>${user.room}</div>
+            <div class="detail-row"><span class="detail-label">聯絡電話：</span>${user.phone}</div>
+            <div class="detail-row"><span class="detail-label">狀態：</span>${user.status}</div>
+            <div class="detail-row"><span class="detail-label">備註：</span>${user.notes}</div>
+        `;
+
+        document.getElementById("modal").style.display = "flex";
     }
 
     // 關閉 Modal
     function closeModal() {
-        document.getElementById("detail-modal").style.display = "none";
+        document.getElementById("modal").style.display = "none";
     }
 
-    // 產生薪資與扣款費用細項 HTML 表格
-    function generateDetailHTML(user) {
-        return `
-            <table class="detail-table">
-                <tr><th>員工編號</th><td>${user.id}</td></tr>
-                <tr><th>姓名 / 部門</th><td>${user.name} (${user.department})</td></tr>
-                <tr><th>計薪月份</th><td>${user.month}</td></tr>
-                <tr><th>基本薪資</th><td>$${user.baseSalary.toLocaleString()}</td></tr>
-                <tr><th>加班費</th><td>$${user.overtimePay.toLocaleString()}</td></tr>
-                <tr><th>各項津貼/獎金</th><td>$${user.allowance.toLocaleString()}</td></tr>
-                <tr><th>膳宿費扣除</th><td class="deduct-highlight">-$${user.foodDeduction.toLocaleString()}</td></tr>
-                <tr><th>勞保費</th><td class="deduct-highlight">-$${user.laborIns.toLocaleString()}</td></tr>
-                <tr><th>健保費</th><td class="deduct-highlight">-$${user.healthIns.toLocaleString()}</td></tr>
-                <tr><th>其他扣款</th><td class="deduct-highlight">-$${user.otherDeduction.toLocaleString()}</td></tr>
-                <tr style="background-color: #f0fdf4;">
-                    <th>本期實發金額</th>
-                    <td class="amount-highlight">$${user.netPay.toLocaleString()} 元</td>
-                </tr>
-            </table>
-        `;
-    }
-
-    function switchView(isLoggedIn) {
-        document.getElementById("login-section").style.display = isLoggedIn ? "none" : "block";
-        document.getElementById("main-section").style.display = isLoggedIn ? "block" : "none";
-    }
-
+    // 6. 登出
     function logout() {
-        switchView(false);
+        document.getElementById("password-input").value = "";
+        document.getElementById("main-section").classList.add("hidden");
+        document.getElementById("login-section").classList.remove("hidden");
+        isAdmin = false;
     }
 </script>
 
