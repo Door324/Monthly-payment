@@ -3,259 +3,850 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>人員管理系統</title>
+    <title>收款明細查詢系統 / Payment Details Query</title>
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: "Microsoft JhengHei", Arial, sans-serif;
-        }
-        body {
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-        }
-        .login-box {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        input {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-        button {
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .user-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-        }
-        .user-name {
-            font-size: 18px;
-            font-weight: bold;
-        }
-        /* 管理員點擊專屬樣式 */
-        .clickable {
-            color: #007bff;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-        .clickable:hover {
-            color: #0056b3;
-        }
-        .badge {
-            background-color: #e9ecef;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 14px;
-            color: #495057;
-        }
-        
-        /* 彈出視窗 (Modal) 樣式 */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 450px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-        }
-        .modal-header {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 8px;
-        }
-        .detail-row {
-            margin: 10px 0;
-            font-size: 16px;
-            line-height: 1.5;
-        }
-        .detail-label {
-            font-weight: bold;
-            color: #555;
-        }
-        .close-btn {
-            margin-top: 20px;
-            width: 100%;
-            background-color: #6c757d;
-        }
-        .close-btn:hover {
-            background-color: #5a6268;
-        }
-        .hidden {
-            display: none;
-        }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 15px; background-color: #f0f2f5; max-width: 600px; margin: 0 auto; color: #333; }
+        .card { background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        h2 { text-align: center; margin-top: 0; color: #1a73e8; font-size: 20px; }
+        .sub-title { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
+        label { font-weight: bold; display: block; margin-bottom: 6px; font-size: 14px; }
+        .hint { font-size: 12px; color: #666; margin-bottom: 8px; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; outline: none; transition: border 0.2s; }
+        input:focus { border-color: #1a73e8; }
+        button { width: 100%; padding: 12px; margin-top: 15px; background-color: #1a73e8; color: white; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; }
+        button:active { background-color: #1557b0; }
+        .btn-back { background-color: #5f6368; margin-top: 15px; padding: 8px 16px; font-size: 14px; width: auto; display: inline-block; }
+        .btn-back:active { background-color: #3c4043; }
+        .error { color: #d93025; text-align: center; margin-top: 12px; font-size: 14px; display: none; font-weight: bold; }
+        .result-area { display: none; margin-top: 20px; border-top: 2px dashed #eee; padding-top: 15px; }
+        .user-info { background: #e8f0fe; padding: 12px; border-radius: 8px; margin-top: 10px; font-weight: bold; color: #1967d2; display: flex; justify-content: space-between; align-items: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #e0e0e0; padding: 10px; text-align: left; font-size: 14px; }
+        th { background-color: #f8f9fa; }
+        .total-row { font-weight: bold; background-color: #f1f3f4; }
+        .total-amount { color: #d93025; font-size: 16px; }
+        .admin-table { width: 100%; margin-top: 15px; border-collapse: collapse; font-size: 13px; }
+        .admin-table th, .admin-table td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        .admin-table th { background-color: #e8f0fe; }
+        .badge-admin { background: #ea4335; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
+        .clickable-name { color: #1a73e8; text-decoration: underline; cursor: pointer; font-weight: bold; }
+        .clickable-name:hover { color: #1557b0; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>人員系統登入</h2>
-    
-    <!-- 登入區塊 -->
-    <div id="login-section" class="login-box">
-        <input type="password" id="password-input" placeholder="請輸入密碼...">
-        <button onclick="login()">登入</button>
+<div class="card">
+    <h2>收款明細查詢系統</h2>
+    <div class="sub-title">System Tra Cứu Chi Tiết Thanh Toán (115/08)</div>
+
+    <div>
+        <label for="passInput">請輸入居留證號 / Nhập số thẻ cư trú:</label>
+        <div class="hint">（移工請輸入個人居留證號；管理員請輸入萬用密碼）</div>
+        <input type="text" id="passInput" placeholder="例如 / VD: D800359097" autocomplete="off">
+        <button onclick="searchData()">查詢 / Tra cứu</button>
     </div>
 
-    <!-- 主內容區塊 (登入後顯示) -->
-    <div id="main-section" class="hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <span id="role-badge" class="badge"></span>
-            <button onclick="logout()" style="padding: 6px 12px; font-size: 14px; background-color: #dc3545;">登出</button>
+    <div id="errorMsg" class="error"></div>
+
+    <!-- 個人結果顯示區 -->
+    <div id="userResult" class="result-area">
+        <div class="user-info">
+            <span id="userName"></span>
+            <span id="userArc" style="font-size: 12px; color: #555;"></span>
         </div>
-        <div id="user-list"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>項目 / Hạng mục</th>
+                    <th style="text-align: right;">金額 / Số tiền</th>
+                </tr>
+            </thead>
+            <tbody id="detailTableBody"></tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td>總計 / Tổng cộng</td>
+                    <td style="text-align: right;" class="total-amount" id="totalAmount"></td>
+                </tr>
+            </tfoot>
+        </table>
+        <button id="backToAdminBtn" class="btn-back" style="display: none;" onclick="showAdminViewAgain()">⬅ 返回管理員總表</button>
     </div>
-</div>
 
-<!-- 詳細資料彈出視窗 -->
-<div id="modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">人員詳細資料</div>
-        <div id="modal-body"></div>
-        <button class="close-btn" onclick="closeModal()">關閉</button>
+    <!-- 管理員全表顯示區 -->
+    <div id="adminResult" class="result-area">
+        <div class="user-info">
+            <span>管理員總表模式 <span class="badge-admin">Admin</span></span>
+            <span id="adminTotalCount" style="font-size: 12px; color: #555;"></span>
+        </div>
+        <div style="overflow-x: auto;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>姓名 (點擊看明細)</th>
+                        <th>居留證號</th>
+                        <th>應繳總金額</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTableBody"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script>
-    // 1. 設定密碼
-    const ADMIN_PASSWORD = "00000000"; // 管理員萬用密碼 (8個零)
-    const USER_PASSWORD = "123";        // 一般使用者預設密碼
+    // 1. 管理員萬用密碼設定 (改為8個0)
+    const ADMIN_PASSWORD = "00000000"; 
 
-    // 2. 模擬人員數據資料庫
-    const usersData = [
-        { id: "A001", name: "張小明", department: "製造一部", room: "A棟 201", phone: "0912-345-678", status: "在職", notes: "早班，負責一號機台" },
-        { id: "A002", name: "王大同", department: "品質管理", room: "B棟 105", phone: "0923-456-789", status: "在職", notes: "夜班，需協助宿舍管理" },
-        { id: "A003", name: "陳美麗", department: "行政管理", room: "A棟 302", phone: "0934-567-890", status: "請假中", notes: "預計下週一返回" },
-        { id: "A004", name: "李科長", department: "資材部", room: "C棟 101", phone: "0945-678-901", status: "在職", notes: "無特殊備註" }
-    ];
+    // 2. 本期明細資料 (伊頓 115.08 月份)
+    const monthlyData = [
+  {
+    "arc": "D800343517",
+    "name": "丁天王",
+    "total": 2401,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 301 }
+    ]
+  },
+  {
+    "arc": "D900231596",
+    "name": "杜芳草",
+    "total": 2135,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第二年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1700 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 135 }
+    ]
+  },
+  {
+    "arc": "D900224840",
+    "name": "吳氏慶璃",
+    "total": 2135,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第二年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1700 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 135 }
+    ]
+  },
+  {
+    "arc": "D900245983",
+    "name": "吳氏水",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D800352356",
+    "name": "歐文貴",
+    "total": 2351,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 251 }
+    ]
+  },
+  {
+    "arc": "D900237776",
+    "name": "團越瓊",
+    "total": 2248,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第二年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1700 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 248 }
+    ]
+  },
+  {
+    "arc": "D900231621",
+    "name": "胡氏月",
+    "total": 2135,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第二年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1700 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 135 }
+    ]
+  },
+  {
+    "arc": "D800353657",
+    "name": "胡士懷",
+    "total": 2351,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 251 }
+    ]
+  },
+  {
+    "arc": "D800353540",
+    "name": "翁文升",
+    "total": 2351,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 251 }
+    ]
+  },
+  {
+    "arc": "D800360527",
+    "name": "陳文欽",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D800353639",
+    "name": "陳文都",
+    "total": 2351,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 251 }
+    ]
+  },
+  {
+    "arc": "D800333333",
+    "name": "陳文貴",
+    "total": 2126,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第二年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1700 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 126 }
+    ]
+  },
+  {
+    "arc": "D800352927",
+    "name": "陳長江",
+    "total": 2351,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 251 }
+    ]
+  },
+  {
+    "arc": "D900245965",
+    "name": "陳氏鶯",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D900224822",
+    "name": "梁氏垂容",
+    "total": 2135,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第二年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1700 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 135 }
+    ]
+  },
+  {
+    "arc": "D800382407",
+    "name": "黃玉榮",
+    "total": 4782,
+    "items": [
+      { "name": "印章", "vn": "Ｃon dấu", "amt": 50 },
+      { "name": "加做檢", "vn": "Kiểm tra sức khỏe đặc biệt", "amt": 500 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "居留證", "vn": "PHÍLÀMTHẺCƯTRÚ", "amt": 1000 },
+      { "name": "居留證", "vn": "PHÍLÀMTHẺCƯTRÚ", "amt": 1000 },
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 32 },
+      { "name": "宿舍停車費", "vn": "Phí để xe kí túc", "amt": 100 }
+    ]
+  },
+  {
+    "arc": "D800353675",
+    "name": "黃海登",
+    "total": 2351,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 251 }
+    ]
+  },
+  {
+    "arc": "D800359104",
+    "name": "黃孟福",
+    "total": 2351,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 251 }
+    ]
+  },
+  {
+    "arc": "D800337019",
+    "name": "黎光亮",
+    "total": 2401,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 301 }
+    ]
+  },
+  {
+    "arc": "D800349288",
+    "name": "黎國達",
+    "total": 2248,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第二年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1700 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 248 }
+    ]
+  },
+  {
+    "arc": "D800356372",
+    "name": "黎世造",
+    "total": 2351,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 251 }
+    ]
+  },
+  {
+    "arc": "D900231603",
+    "name": "黎秋玄",
+    "total": 2135,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第二年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1700 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 135 }
+    ]
+  },
+  {
+    "arc": "D900246006",
+    "name": "黎氏金絨",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D800384821",
+    "name": "潘青河",
+    "total": 7666,
+    "items": [
+      { "name": "宿舍停車費", "vn": "Phí để xe kí túc", "amt": 100 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 316 },
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "體檢費", "vn": "PHÍKHÁMSỨCKHỎE", "amt": 1600 },
+      { "name": "居留證", "vn": "PHÍLÀMTHẺCƯTRÚ", "amt": 1000 },
+      { "name": "居留證", "vn": "PHÍLÀMTHẺCƯTRÚ", "amt": 1000 },
+      { "name": "居留證", "vn": "PHÍLÀMTHẺCƯTRÚ", "amt": 1000 },
+      { "name": "加做檢", "vn": "Kiểm tra sức khỏe đặc biệt", "amt": 500 },
+      { "name": "印章", "vn": "Ｃon dấu", "amt": 50 }
+    ]
+  },
+  {
+    "arc": "D900241529",
+    "name": "裴蘭英",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D900242713",
+    "name": "裴氏翠",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D800360518",
+    "name": "范維興",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D800359088",
+    "name": "范文情",
+    "total": 2351,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 251 }
+    ]
+  },
+  {
+    "arc": "D800371057",
+    "name": "阮德合",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D900245992",
+    "name": "阮芳芝",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D800353666",
+    "name": "阮國輝",
+    "total": 2351,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 251 }
+    ]
+  },
+  {
+    "arc": "D800356363",
+    "name": "阮懷寶",
+    "total": 2351,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 251 }
+    ]
+  },
+  {
+    "arc": "D800337000",
+    "name": "阮決勝",
+    "total": 17508,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 301 },
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 209 },
+      { "name": "電費", "vn": "Phí điện", "amt": 100 },
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 159 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 208 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 379 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 644 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 }
+    ]
+  },
+  {
+    "arc": "D800360545",
+    "name": "阮太山",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D800360509",
+    "name": "阮昌才",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D800353648",
+    "name": "阮庭榮",
+    "total": 2351,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 251 }
+    ]
+  },
+  {
+    "arc": "D800371048",
+    "name": "阮文編",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D800333342",
+    "name": "阮文里",
+    "total": 2413,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 313 }
+    ]
+  },
+  {
+    "arc": "D800336996",
+    "name": "阮文戰",
+    "total": 2401,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 301 }
+    ]
+  },
+  {
+    "arc": "D800347499",
+    "name": "阮維黃",
+    "total": 2401,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 301 }
+    ]
+  },
+  {
+    "arc": "D800353620",
+    "name": "阮維純",
+    "total": 2351,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 251 }
+    ]
+  },
+  {
+    "arc": "D800359097",
+    "name": "阮玉河",
+    "total": 2351,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 251 }
+    ]
+  },
+  {
+    "arc": "D900237767",
+    "name": "阮氏銀",
+    "total": 2248,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第二年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1700 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 248 }
+    ]
+  },
+  {
+    "arc": "D900247138",
+    "name": "阮氏懷",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D900224859",
+    "name": "阮氏絨",
+    "total": 7064,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 819 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "體檢費", "vn": "PHÍKHÁMSỨCKHỎE", "amt": 1600 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 545 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 }
+    ]
+  },
+  {
+    "arc": "D900254071",
+    "name": "阮氏翠賢",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D900245974",
+    "name": "阮氏燕兒",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D900224813",
+    "name": "阮曰貞",
+    "total": 2135,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第二年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1700 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 135 }
+    ]
+  },
+  {
+    "arc": "D800360536",
+    "name": "阮英俊",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D900241547",
+    "name": "武青雲",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D900246033",
+    "name": "武氏幸",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D900246015",
+    "name": "韋氏愛",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D800375493",
+    "name": "賴文鐘",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  },
+  {
+    "arc": "D900224831",
+    "name": "鄧氏心",
+    "total": 2135,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第二年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1700 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 135 }
+    ]
+  },
+  {
+    "arc": "D900251936",
+    "name": "蘇氏蓮",
+    "total": 2320,
+    "items": [
+      { "name": "水費", "vn": "Điện nước", "amt": 150 },
+      { "name": "電費", "vn": "Phí điện", "amt": 150 },
+      { "name": "服務費第一年", "vn": "PHÍPHỤCVỤ THÁNG", "amt": 1800 },
+      { "name": "冷氣費", "vn": "Phí điều hòa", "amt": 220 }
+    ]
+  }
+];
 
-    let isAdmin = false;
+    function searchData() {
+        const input = document.getElementById("passInput").value.trim().toUpperCase();
+        const errorMsg = document.getElementById("errorMsg");
+        const userResult = document.getElementById("userResult");
+        const adminResult = document.getElementById("adminResult");
 
-    // 3. 登入邏輯
-    function login() {
-        const inputPass = document.getElementById("password-input").value;
+        errorMsg.style.display = "none";
+        userResult.style.display = "none";
+        adminResult.style.display = "none";
 
-        if (inputPass === ADMIN_PASSWORD) {
-            isAdmin = true;
-            document.getElementById("role-badge").innerText = "目前身分：系統管理員";
-            document.getElementById("role-badge").style.color = "#007bff";
-            enterSystem();
-        } else if (inputPass === USER_PASSWORD) {
-            isAdmin = false;
-            document.getElementById("role-badge").innerText = "目前身分：一般使用者";
-            document.getElementById("role-badge").style.color = "#28a745";
-            enterSystem();
+        if (!input) {
+            showError("請輸入居留證號或管理員密碼！ / Vui lòng nhập số thẻ cư trú!");
+            return;
+        }
+
+        // 1. 判斷管理員密碼
+        if (input === ADMIN_PASSWORD) {
+            renderAdminView();
+            return;
+        }
+
+        // 2. 判斷個人居留證號
+        const person = monthlyData.find(item => item.arc.toUpperCase() === input);
+
+        if (person) {
+            renderUserView(person, false);
         } else {
-            alert("密碼錯誤，請重新輸入！");
+            showError("查無此居留證號，請確認後重新輸入！ / Không tìm thấy, vui lòng kiểm tra lại!");
         }
     }
 
-    // 進入系統介面
-    function enterSystem() {
-        document.getElementById("login-section").classList.add("hidden");
-        document.getElementById("main-section").classList.remove("hidden");
-        renderList();
+    function showError(msg) {
+        const errorMsg = document.getElementById("errorMsg");
+        errorMsg.innerText = msg;
+        errorMsg.style.display = "block";
     }
 
-    // 4. 渲染人員清單
-    function renderList() {
-        const listContainer = document.getElementById("user-list");
-        listContainer.innerHTML = "";
+    function renderUserView(person, isFromAdmin = false) {
+        document.getElementById("userName").innerText = person.name;
+        document.getElementById("userArc").innerText = "居留證: " + person.arc;
+        
+        const tbody = document.getElementById("detailTableBody");
+        tbody.innerHTML = "";
 
-        usersData.forEach((user, index) => {
-            const card = document.createElement("div");
-            card.className = "user-card";
-
-            if (isAdmin) {
-                // 管理員身分：名字變成藍色底線可點擊
-                card.innerHTML = `
-                    <span class="user-name clickable" onclick="openDetail(${index})">
-                        ${user.name} 🔍
-                    </span>
-                    <span class="badge">${user.department}</span>
-                `;
-            } else {
-                // 一般使用者身分：純文字無法點擊
-                card.innerHTML = `
-                    <span class="user-name">${user.name}</span>
-                    <span class="badge">${user.department}</span>
-                `;
-            }
-            listContainer.appendChild(card);
+        person.items.forEach(item => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${item.name}<br><small style="color: #666;">${item.vn}</small></td>
+                <td style="text-align: right; vertical-align: middle;">$${item.amt.toLocaleString()}</td>
+            `;
+            tbody.appendChild(tr);
         });
+
+        document.getElementById("totalAmount").innerText = "$" + person.total.toLocaleString();
+        
+        // 如果是管理員點進來的，顯示「返回總表」按鈕
+        const backBtn = document.getElementById("backToAdminBtn");
+        if (isFromAdmin) {
+            backBtn.style.display = "inline-block";
+        } else {
+            backBtn.style.display = "none";
+        }
+
+        document.getElementById("userResult").style.display = "block";
     }
 
-    // 5. 管理員點擊開啟詳細資料 Modal
-    function openDetail(index) {
-        const user = usersData[index];
-        const modalBody = document.getElementById("modal-body");
+    function renderAdminView() {
+        const tbody = document.getElementById("adminTableBody");
+        tbody.innerHTML = "";
 
-        modalBody.innerHTML = `
-            <div class="detail-row"><span class="detail-label">姓名：</span>${user.name}</div>
-            <div class="detail-row"><span class="detail-label">工號：</span>${user.id}</div>
-            <div class="detail-row"><span class="detail-label">部門：</span>${user.department}</div>
-            <div class="detail-row"><span class="detail-label">宿舍房號：</span>${user.room}</div>
-            <div class="detail-row"><span class="detail-label">聯絡電話：</span>${user.phone}</div>
-            <div class="detail-row"><span class="detail-label">狀態：</span>${user.status}</div>
-            <div class="detail-row"><span class="detail-label">備註：</span>${user.notes}</div>
-        `;
+        let grandTotal = 0;
+        monthlyData.forEach(person => {
+            grandTotal += person.total;
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><span class="clickable-name" onclick="viewDetailFromAdmin('${person.arc}')">${person.name}</span></td>
+                <td><span class="clickable-name" onclick="viewDetailFromAdmin('${person.arc}')">${person.arc}</span></td>
+                <td style="text-align: right; font-weight: bold; color: #d93025;">$${person.total.toLocaleString()}</td>
+            `;
+            tbody.appendChild(tr);
+        });
 
-        document.getElementById("modal").style.display = "flex";
+        document.getElementById("adminTotalCount").innerText = `共 ${monthlyData.length} 人 | 總計: $${grandTotal.toLocaleString()}`;
+        document.getElementById("adminResult").style.display = "block";
     }
 
-    // 關閉 Modal
-    function closeModal() {
-        document.getElementById("modal").style.display = "none";
+    // 管理員查看特定人員細項
+    function viewDetailFromAdmin(arc) {
+        const person = monthlyData.find(item => item.arc === arc);
+        if (person) {
+            document.getElementById("adminResult").style.display = "none";
+            renderUserView(person, true);
+        }
     }
 
-    // 6. 登出
-    function logout() {
-        document.getElementById("password-input").value = "";
-        document.getElementById("main-section").classList.add("hidden");
-        document.getElementById("login-section").classList.remove("hidden");
-        isAdmin = false;
+    // 返回管理員總表
+    function showAdminViewAgain() {
+        document.getElementById("userResult").style.display = "none";
+        document.getElementById("adminResult").style.display = "block";
     }
 </script>
 
